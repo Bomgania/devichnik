@@ -1,0 +1,76 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Master {
+  id             String          @id @default(cuid())
+  name           String
+  specialization String
+  experience     String
+  bio            String?
+  photo          String
+  rating         Float           @default(5.0)
+  reviewCount    Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  appointments   Appointment[]
+  portfolio      PortfolioItem[]
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  name         String
+  category     String        // "волосы", "ногти", "косметология", "брови и макияж"
+  description  String?
+  duration     Int           // длительность в минутах
+  price        Int           // цена в рублях
+  imageUrl     String?
+  isPopular    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  appointments Appointment[]
+}
+
+model Appointment {
+  id          String   @id @default(cuid())
+  clientName  String
+  phone       String
+  date        String   // YYYY-MM-DD
+  time        String   // HH:mm
+  status      String   @default("pending") // pending, confirmed, completed, cancelled
+  notes       String?
+  masterId    String
+  master      Master   @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  author    String
+  avatar    String?
+  rating    Int      @default(5)
+  text      String
+  date      String
+  service   String?
+  createdAt DateTime @default(now())
+}
+
+model PortfolioItem {
+  id             String   @id @default(cuid())
+  title          String
+  category       String   // "волосы", "ногти", "косметология", "макияж"
+  imageUrl       String
+  beforeImageUrl String?
+  description    String?
+  masterId       String?
+  master         Master?  @relation(fields: [masterId], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
+}
